@@ -2,13 +2,13 @@ import requests
 import base64
 import os
 
-# 🔐 CONFIGURAÇÕES (use variável de ambiente)
-GITHUB_TOKEN = "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"
+# 🔐 CONFIGURAÇÕES
+GITHUB_TOKEN = "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"
 REPO = "BI-CIPP/ImagemSequencia"
 BRANCH = "main"
 
 # 📁 Caminho da imagem
-FILE_PATH = r"C:\OneDrive\CIPP\GEOPP - GEOPP\03-CCO\SEQUÊNCIA POWER BI\Imagem\SEQUÊNCIADEATRACAÇÃO.png"
+FILE_PATH = r"C:\OneDrive\CIPP\GEOPP - GEOPP\03-CCO\SEQUÊNCIA POWER BI\Imagem\SEQUÊNCIA DE ATRACAÇÃO.png"
 
 # 📌 Nome dentro do repositório
 FILE_NAME = os.path.basename(FILE_PATH)
@@ -18,30 +18,22 @@ GITHUB_PATH = f"imagens/{FILE_NAME}"
 with open(FILE_PATH, "rb") as file:
     content = base64.b64encode(file.read()).decode("utf-8")
 
-# 🔗 URL da API
+# 🔎 Verifica se arquivo já existe (para atualizar)
 url = f"https://api.github.com/repos/{REPO}/contents/{GITHUB_PATH}"
 
 headers = {
-    "Authorization": f"Bearer {GITHUB_TOKEN}",
-    "Accept": "application/vnd.github+json"
+    "Authorization": f"token {GITHUB_TOKEN}"
 }
 
-# 🔎 Verifica se arquivo já existe
 response = requests.get(url, headers=headers)
 
 sha = None
 if response.status_code == 200:
     sha = response.json()["sha"]
-    print("🔄 Arquivo já existe → será ATUALIZADO")
-elif response.status_code == 404:
-    print("🆕 Arquivo não existe → será CRIADO")
-else:
-    print("❌ Erro ao verificar arquivo:", response.json())
-    exit()
 
 # 📤 Upload / Update
 data = {
-    "message": f"Upload automático: {FILE_NAME}",
+    "message": f"Upload {FILE_NAME}",
     "content": content,
     "branch": BRANCH
 }
@@ -51,20 +43,12 @@ if sha:
 
 upload = requests.put(url, json=data, headers=headers)
 
-# 📊 RESULTADO
 if upload.status_code in [200, 201]:
     print("✅ Upload realizado com sucesso!")
 
+    # 🔗 LINK RAW (Power BI)
     raw_url = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{GITHUB_PATH}"
-    html_url = f"https://github.com/{REPO}/blob/{BRANCH}/{GITHUB_PATH}"
-
-    print("🌍 Link RAW (Power BI):")
-    print(raw_url)
-
-    print("📂 Link GitHub:")
-    print(html_url)
+    print("🌍 Link RAW:", raw_url)
 
 else:
-    print("❌ Erro no upload:")
-    print("Status:", upload.status_code)
-    print(upload.json())
+    print("❌ Erro:", upload.json())
