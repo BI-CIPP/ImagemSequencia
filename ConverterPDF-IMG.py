@@ -22,7 +22,7 @@ def convert_pdf_to_png(pdf_path: Path, output_dir: Path, dpi: int = 300):
         doc = fitz.open(str(pdf_path))
  
         # Nome base do arquivo sem extensão
-        base_name = pdf_path.stem
+        base_name = pdf_path.stem.replace(" ", "")
  
         # Processa cada página
         for page_num in range(len(doc)):
