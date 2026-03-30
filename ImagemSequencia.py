@@ -3,12 +3,12 @@ import base64
 import os
 
 # 🔐 CONFIGURAÇÕES
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = "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"
 REPO = "BI-CIPP/ImagemSequencia"
 BRANCH = "main"
 
 # 📁 Caminho da imagem
-FILE_PATH = r"C:\OneDrive\CIPP\GEOPP - GEOPP\03-CCO\SEQUÊNCIA POWER BI\Imagem\SEQUÊNCIA DE ATRACAÇÃO.png"
+FILE_PATH = r"C:\OneDrive\CIPP\GEOPP - GEOPP\03-CCO\SEQUÊNCIA POWER BI\Imagem\SEQUÊNCIADEATRACAÇÃO.png"
 
 # 📌 Nome dentro do repositório
 FILE_NAME = os.path.basename(FILE_PATH)
