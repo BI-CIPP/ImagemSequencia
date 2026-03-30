@@ -3,33 +3,51 @@ import base64
 import os
 import unicodedata
 
+# ==========================================
 # 🔐 CONFIGURAÇÕES
-GITHUB_TOKEN = "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"  # ⚠️ NUNCA exponha isso publicamente
+# ==========================================
+GITHUB_TOKEN = "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"
 REPO = "BI-CIPP/ImagemSequencia"
 BRANCH = "main"
 
 # 📁 Caminho da imagem
 FILE_PATH = r"C:\OneDrive\CIPP\GEOPP - GEOPP\03-CCO\SEQUÊNCIA POWER BI\Imagem\SEQUÊNCIA DE ATRACAÇÃO.png"
 
-# 🔤 Função para limpar nome do arquivo
+# ==========================================
+# 🔤 FUNÇÃO: NORMALIZAR NOME
+# ==========================================
 def normalizar_nome(nome):
     nome = unicodedata.normalize('NFKD', nome).encode('ASCII', 'ignore').decode('ASCII')
     nome = nome.replace(" ", "_")
     return nome
 
-# 📌 Nome tratado
-FILE_NAME = normalizar_nome(os.path.basename(FILE_PATH))
-GITHUB_PATH = f"imagens/{FILE_NAME}"
-
-# 📖 Lê arquivo
+# ==========================================
+# 📌 PREPARAÇÃO
+# ==========================================
 if not os.path.exists(FILE_PATH):
     print("❌ Arquivo não encontrado:", FILE_PATH)
     exit()
 
-with open(FILE_PATH, "rb") as file:
-    content = base64.b64encode(file.read()).decode("utf-8")
+FILE_NAME_ORIGINAL = os.path.basename(FILE_PATH)
+FILE_NAME = normalizar_nome(FILE_NAME_ORIGINAL)
+GITHUB_PATH = f"imagens/{FILE_NAME}"
 
-# 🔗 URL GitHub API
+print(f"📄 Arquivo original: {FILE_NAME_ORIGINAL}")
+print(f"📄 Nome normalizado: {FILE_NAME}")
+
+# ==========================================
+# 📖 LER E CONVERTER
+# ==========================================
+try:
+    with open(FILE_PATH, "rb") as file:
+        content = base64.b64encode(file.read()).decode("utf-8")
+except Exception as e:
+    print("❌ Erro ao ler arquivo:", str(e))
+    exit()
+
+# ==========================================
+# 🔗 URL GITHUB API
+# ==========================================
 url = f"https://api.github.com/repos/{REPO}/contents/{GITHUB_PATH}"
 
 headers = {
@@ -37,40 +55,56 @@ headers = {
     "Accept": "application/vnd.github+json"
 }
 
-# 🔎 Verifica se já existe
-response = requests.get(url, headers=headers)
+# ==========================================
+# 🔎 VERIFICAR SE JÁ EXISTE (PEGAR SHA)
+# ==========================================
+try:
+    response = requests.get(url, headers=headers)
+except Exception as e:
+    print("❌ Erro na requisição GET:", str(e))
+    exit()
 
 sha = None
+
 if response.status_code == 200:
-    sha = response.json()["sha"]
-    print("ℹ️ Arquivo já existe, será atualizado.")
+    sha = response.json().get("sha")
+    print("🔄 Arquivo já existe — será atualizado")
 elif response.status_code == 404:
-    print("ℹ️ Arquivo não existe, será criado.")
+    print("🆕 Arquivo novo — será criado")
 else:
     print("❌ Erro ao verificar arquivo:", response.json())
     exit()
 
-# 📤 Upload / Update
+# ==========================================
+# 📤 UPLOAD / UPDATE
+# ==========================================
 data = {
-    "message": f"Upload {FILE_NAME}",
+    "message": f"Upload automático: {FILE_NAME}",
     "content": content,
     "branch": BRANCH
 }
 
 if sha:
-    data["sha"] = sha
+    data["sha"] = sha  # necessário para sobrescrever
 
-upload = requests.put(url, json=data, headers=headers)
+try:
+    upload = requests.put(url, json=data, headers=headers)
+except Exception as e:
+    print("❌ Erro na requisição PUT:", str(e))
+    exit()
 
-# ✅ Resultado
+# ==========================================
+# ✅ RESULTADO
+# ==========================================
 if upload.status_code in [200, 201]:
     print("✅ Upload realizado com sucesso!")
 
-    resposta = upload.json()
-    download_url = resposta["content"]["download_url"]
+    raw_url = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{GITHUB_PATH}"
 
-    print("🌍 Link para usar no Power BI:")
-    print(download_url)
+    print("\n🌍 LINK RAW (usar no Power BI):")
+    print(raw_url)
+
+    print("\n📌 Teste no navegador antes de usar no Power BI!")
 
 else:
     print("❌ Erro no upload:")
