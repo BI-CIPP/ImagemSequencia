@@ -3,7 +3,7 @@ import base64
 import os
 
 # 🔐 CONFIGURAÇÕES
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = "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"
 REPO = "BI-CIPP/ImagemSequencia"
 BRANCH = "main"
 
